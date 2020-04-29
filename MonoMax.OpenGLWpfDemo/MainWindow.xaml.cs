@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics;
+﻿using MonoMax.Core;
+using MonoMax.OpenGLWpfDemo.Renderer;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -23,7 +25,8 @@ namespace MonoMax.OpenGLWpfDemo
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Renderer m_renderer = new Renderer();
+        private readonly IRenderer _renderer = new ModernRenderer();
+
 
         public MainWindow()
         {
@@ -32,8 +35,10 @@ namespace MonoMax.OpenGLWpfDemo
 
         private void glControl_GLRender(object sender, EventArgs e)
         {
-            m_renderer.Render((int)Math.Round(glControl.ActualWidth), (int)Math.Round(glControl.ActualHeight));
-
+            var w = (int)glControl.ActualWidth;
+            var h = (int)glControl.ActualHeight;
+            _renderer.Draw(w, h);
         }
+
     }
 }

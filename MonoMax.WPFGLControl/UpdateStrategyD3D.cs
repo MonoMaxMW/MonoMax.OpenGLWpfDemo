@@ -1,13 +1,10 @@
-﻿using OpenTK.Graphics;
-using OpenTK.Platform;
+﻿using OpenTK.Graphics.OpenGL;
 using SharpDX.Direct3D9;
 using System;
-using System.Windows.Interop;
-using OpenTK.Graphics.OpenGL;
-using gl = OpenTK.Graphics.OpenGL.GL;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Threading;
+using gl = OpenTK.Graphics.OpenGL.GL;
 
 namespace MonoMax.WPFGLControl
 {
@@ -111,10 +108,9 @@ namespace MonoMax.WPFGLControl
         public void Draw()
         {
             _wglInterop.WglDXLockObjectsNV(_glHandle, 1, _glHandles);
-            _wglInterop.WglDXUnlockObjectsNV(_glHandle, 1, _glHandles);
-
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
             gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
+            _wglInterop.WglDXUnlockObjectsNV(_glHandle, 1, _glHandles);
 
         }
 

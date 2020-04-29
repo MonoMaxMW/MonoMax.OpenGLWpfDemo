@@ -39,7 +39,6 @@ namespace MonoMax.WPFGLControl
         private bool _wasResized;
         private int _frames;
         private TextBlock _framesTextBlock;
-        private DateTime _lastMeasured;
         private Image _wpfImage;
         private IntPtr _windowHandle;
         private HwndSource _hwnd;
@@ -53,6 +52,14 @@ namespace MonoMax.WPFGLControl
         public UpdateStrategy UpdateStrategy { get; set; } = UpdateStrategy.D3DSurface;
         public event EventHandler GLRender;
 
+        private void InitOpenGLContext()
+        {
+            var mode = new GraphicsMode(ColorFormat.Empty, 0, 0, 0, 0, 0, false);
+            _glContext = new GraphicsContext(mode, _windowInfo, 3, 0, GraphicsContextFlags.Default);
+            _glContext.MakeCurrent(_windowInfo);
+            _glContext.LoadAll();
+        }
+
         public override void OnApplyTemplate()
         {
             var window = Window.GetWindow(this);
@@ -62,8 +69,8 @@ namespace MonoMax.WPFGLControl
 
             _wpfImage = new Image()
             {
-                //RenderTransformOrigin = new Point(0.5, 0.5),
-                //RenderTransform = new ScaleTransform(1, -1)
+                RenderTransformOrigin = new Point(0.5, 0.5),
+                RenderTransform = new ScaleTransform(1, -1)
             };
 
             var grid = new Grid();
@@ -75,6 +82,8 @@ namespace MonoMax.WPFGLControl
                 Foreground = new SolidColorBrush(Colors.Blue),
                 FontWeight = FontWeights.Bold
             };
+            Panel.SetZIndex(_framesTextBlock, 1);
+
             grid.Children.Add(_framesTextBlock);
             grid.Children.Add(_wpfImage);
             AddChild(grid);
@@ -152,14 +161,6 @@ namespace MonoMax.WPFGLControl
                 _stopwatch.Restart();
                 _frames = 0;
             }
-        }
-
-        private void InitOpenGLContext()
-        {
-            var mode = new GraphicsMode(ColorFormat.Empty, 0, 0, 0, 0, 0, false);
-            _glContext = new GraphicsContext(mode, _windowInfo, 3, 0, GraphicsContextFlags.Default);
-            _glContext.LoadAll();
-            _glContext.MakeCurrent(_windowInfo);
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
