@@ -102,6 +102,8 @@ namespace MonoMax.WPFGLControl
                 _glTexture,
                 0);
 
+
+
             gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
         }
 

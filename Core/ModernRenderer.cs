@@ -8,7 +8,7 @@ using System.Reflection;
 using gl = OpenTK.Graphics.OpenGL.GL;
 using mat4 = OpenTK.Matrix4;
 
-namespace MonoMax.OpenGLWpfDemo.Renderer
+namespace MonoMax.Core
 {
     public sealed class ModernRenderer : IRenderer
     {
@@ -95,7 +95,7 @@ namespace MonoMax.OpenGLWpfDemo.Renderer
 
         private float[] FillData()
         {
-            var count = 1_000_000;
+            var count = Constant.POINTS_AMOUNT;
             var factor = 0.2f;
             var rnd = new Random();
             var array = new float[count * 3];

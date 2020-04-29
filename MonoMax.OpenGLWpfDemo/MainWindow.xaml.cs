@@ -9,7 +9,7 @@ namespace MonoMax.WpfExample
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly IRenderer _renderer = new LegacyRenderer();
+        private readonly IRenderer _renderer = new ModernRenderer();
 
 
         public MainWindow()

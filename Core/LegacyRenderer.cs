@@ -11,6 +11,7 @@
     /// </summary>
     public sealed class LegacyRenderer : IRenderer
     {
+        
 
         private float angle;
         private int displayList;
@@ -63,7 +64,7 @@
                 gl.PointSize(1.5f);
                 gl.Begin(PrimitiveType.Points);
                 Random rnd = new Random();
-                for (int i = 0; i < 1_000_000; i++)
+                for (int i = 0; i < Constant.POINTS_AMOUNT; i++)
                 {
                     float factor = 0.2f;
                     Vector3 position = new Vector3(

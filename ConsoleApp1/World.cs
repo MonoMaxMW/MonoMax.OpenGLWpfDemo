@@ -1,5 +1,4 @@
 ﻿using MonoMax.Core;
-using MonoMax.OpenGLWpfDemo.Renderer;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
