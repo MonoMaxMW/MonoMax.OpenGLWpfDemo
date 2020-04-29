@@ -8,6 +8,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="480" Width="640">
     <Grid>
-        <gl:WPFGLControl x:Name="glControl" />
+        <gl:WPFGLControl x:Name="glControl" 
+                         GLRender="glControl_GLRender" 
+                         UpdateStrategy="D3DSurface">
+        </gl:WPFGLControl>
     </Grid>
 </Window>

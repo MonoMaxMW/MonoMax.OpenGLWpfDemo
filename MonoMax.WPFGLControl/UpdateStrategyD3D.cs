@@ -7,6 +7,7 @@ using OpenTK.Graphics.OpenGL;
 using gl = OpenTK.Graphics.OpenGL.GL;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace MonoMax.WPFGLControl
 {
@@ -21,11 +22,11 @@ namespace MonoMax.WPFGLControl
         private Surface _surface;
         private WGLInterop _wglInterop;
         private D3DImage _d3dImage;
+        public bool IsCreated { get; private set; }
 
         public void Create()
         {
-            _d3dImage = new D3DImage(96, 96);
-            _wglInterop = new WGLInterop();
+
         }
 
         public void Destroy()
@@ -44,8 +45,14 @@ namespace MonoMax.WPFGLControl
             if (_device != null) _device = null;
         }
 
+        public ImageSource CreateImageSource()
+        {
+            return _d3dImage = new D3DImage(96, 96);
+        }
+
         public void Resize(int width, int height)
         {
+            _wglInterop = new WGLInterop();
             ReleaseResources();
 
             _device = new DeviceEx(
@@ -101,23 +108,22 @@ namespace MonoMax.WPFGLControl
             gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
         }
 
-        public ImageSource Draw(Action renderCallback)
+        public void Draw()
         {
-            if (_d3dImage == null || !_d3dImage.IsFrontBufferAvailable)
-                return null;
-
             _wglInterop.WglDXLockObjectsNV(_glHandle, 1, _glHandles);
-            renderCallback?.Invoke();
             _wglInterop.WglDXUnlockObjectsNV(_glHandle, 1, _glHandles);
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
             gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
 
+        }
+
+        public void InvalidateImageSource()
+        {
             _d3dImage.Lock();
             _d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, _surface.NativePointer);
             _d3dImage.AddDirtyRect(new Int32Rect(0, 0, _d3dImage.PixelWidth, _d3dImage.PixelHeight));
             _d3dImage.Unlock();
-            return _d3dImage;
         }
     }
 }

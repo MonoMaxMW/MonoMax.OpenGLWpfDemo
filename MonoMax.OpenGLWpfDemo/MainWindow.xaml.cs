@@ -24,25 +24,15 @@ namespace MonoMax.OpenGLWpfDemo
     public partial class MainWindow : Window
     {
         private readonly Renderer m_renderer = new Renderer();
-        private DateTime lastMeasuredTime;
-        private int frames;
 
         public MainWindow()
         {
             InitializeComponent();
-            glControl.RenderCallback = () =>
-            {
-                if (DateTime.Now.Subtract(lastMeasuredTime) > TimeSpan.FromSeconds(1))
-                {
-                    Title = $"{frames}";
-                    lastMeasuredTime = DateTime.Now;
-                    frames = 0;
-                }
+        }
 
-                m_renderer.Render((int)Math.Round(glControl.ActualWidth), (int)Math.Round(glControl.ActualHeight));
-                frames++;
-            };
-
+        private void glControl_GLRender(object sender, EventArgs e)
+        {
+            m_renderer.Render((int)Math.Round(glControl.ActualWidth), (int)Math.Round(glControl.ActualHeight));
 
         }
     }

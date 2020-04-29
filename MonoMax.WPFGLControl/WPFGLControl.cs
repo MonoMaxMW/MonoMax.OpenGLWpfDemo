@@ -2,6 +2,8 @@
 using OpenTK.Graphics;
 using OpenTK.Platform;
 using System;
+using System.ComponentModel;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -23,37 +25,59 @@ namespace MonoMax.WPFGLControl
             Toolkit.Init(new ToolkitOptions() { Backend = PlatformBackend.PreferNative });
         }
 
+        public WPFGLControl()
+        {
+            Loaded += (s, e) =>
+            {
+                Window.GetWindow(this)
+                .Closing += (ss, ee) => { _cts?.Cancel(); };
+            };
+        }
+
+        private CancellationTokenSource _cts;
+        private bool _wasResized;
+        private int _frames;
+        private TextBlock _framesTextBlock;
+        private DateTime _lastMeasured;
         private Image _wpfImage;
         private IntPtr _windowHandle;
         private HwndSource _hwnd;
         private IWindowInfo _windowInfo;
         private IUpdateStrategy _updateStrategy;
         private GraphicsContext _glContext;
-        private DispatcherTimer _dt = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(1) };
+        private Thread _renderThread;
+        private DispatcherTimer _dt;
 
+        public bool UseSeperateRenderThread { get; set; }
         public UpdateStrategy UpdateStrategy { get; set; } = UpdateStrategy.D3DSurface;
-        public Action RenderCallback { get; set; }
+        public event EventHandler GLRender;
 
-
-        public WPFGLControl()
+        public override void OnApplyTemplate()
         {
+            var window = Window.GetWindow(this);
+            _windowHandle = window is null ? IntPtr.Zero : new WindowInteropHelper(window).Handle;
+            _hwnd = new HwndSource(0, 0, 0, 0, 0, "Offscreen Window", _windowHandle);
+            _windowInfo = Utilities.CreateWindowsWindowInfo(_hwnd.Handle);
+
             _wpfImage = new Image()
             {
                 //RenderTransformOrigin = new Point(0.5, 0.5),
                 //RenderTransform = new ScaleTransform(1, -1)
             };
-            AddChild(_wpfImage);
-            _dt.Tick += (o, e) => Draw();
-            _dt.Start();
 
-            //CompositionTarget.Rendering += (o, args) =>
-            //{
-            //    //Draw();
-            //};
-        }
+            var grid = new Grid();
+            _framesTextBlock = new TextBlock()
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(5),
+                Foreground = new SolidColorBrush(Colors.Blue),
+                FontWeight = FontWeights.Bold
+            };
+            grid.Children.Add(_framesTextBlock);
+            grid.Children.Add(_wpfImage);
+            AddChild(grid);
 
-        public override void OnApplyTemplate()
-        {
             switch (UpdateStrategy)
             {
                 case UpdateStrategy.WriteableBitmapImage:
@@ -64,30 +88,80 @@ namespace MonoMax.WPFGLControl
                     break;
             }
 
+            if (UseSeperateRenderThread)
+            {
+                _cts = new CancellationTokenSource();
+                _renderThread = new Thread((object boxedToken) =>
+                {
+                    InitOpenGLContext();
+                    while (!_cts.IsCancellationRequested)
+                    {
+                        UpdateFramerate();
+                        if (_wasResized)
+                        {
+                            _wasResized = false;
+                            _updateStrategy.Resize((int)Math.Round(ActualWidth), (int)Math.Round(ActualHeight));
+                            Dispatcher.Invoke(() => _wpfImage.Source = _updateStrategy.CreateImageSource());
+                        }
 
-            var window = Window.GetWindow(this);
-            _windowHandle = window is null ? IntPtr.Zero : new WindowInteropHelper(window).Handle;
-            _hwnd = new HwndSource(0, 0, 0, 0, 0, "Offscreen Window", _windowHandle);
-            _windowInfo = Utilities.CreateWindowsWindowInfo(_hwnd.Handle);
+                        GLRender?.Invoke(this, EventArgs.Empty);
+                        _updateStrategy?.Draw();
+                        Dispatcher.Invoke(() => _updateStrategy.InvalidateImageSource());
+                    }
 
+                    _renderThread.Join();
+                })
+                { IsBackground = true, Priority = ThreadPriority.Highest };
+                _renderThread.Start(_cts);
+            }
+            else
+            {
+                _dt = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(1) };
+                InitOpenGLContext();
+                _dt.Tick += (o, e) =>
+                {
+                    UpdateFramerate();
+                    if (_wasResized)
+                    {
+                        _wasResized = false;
+                        _updateStrategy.Resize((int)Math.Round(ActualWidth), (int)Math.Round(ActualHeight));
+                        _wpfImage.Source = _updateStrategy.CreateImageSource();
+                    }
+
+                    GLRender?.Invoke(this, EventArgs.Empty);
+                    _updateStrategy.Draw();
+                    _updateStrategy.InvalidateImageSource();
+                };
+                _dt.Start();
+            }
+
+            base.OnApplyTemplate();
+        }
+
+        private void UpdateFramerate()
+        {
+            ++_frames;
+            if (DateTime.Now - _lastMeasured > TimeSpan.FromSeconds(1))
+            {
+                Dispatcher.Invoke(() => _framesTextBlock.Text = $"fps {_frames}");
+                _lastMeasured = DateTime.Now;
+                _frames = 0;
+            }
+        }
+
+        private void InitOpenGLContext()
+        {
             var mode = new GraphicsMode(ColorFormat.Empty, 0, 0, 0, 0, 0, false);
             _glContext = new GraphicsContext(mode, _windowInfo, 3, 0, GraphicsContextFlags.Default);
-            _glContext.MakeCurrent(_windowInfo);
             _glContext.LoadAll();
-            _updateStrategy.Create();
-            
-            base.OnApplyTemplate();
+            _glContext.MakeCurrent(_windowInfo);
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            _updateStrategy.Resize((int)Math.Round(ActualWidth),(int)Math.Round(ActualHeight));
+            _wasResized = true;
             base.OnRenderSizeChanged(sizeInfo);
         }
 
-        private void Draw()
-        {
-            _wpfImage.Source = _updateStrategy?.Draw(RenderCallback);
-        }
     }
 }
