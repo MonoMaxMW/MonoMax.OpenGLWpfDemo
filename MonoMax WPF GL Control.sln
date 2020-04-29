@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.OpenGLWpfDemo", "MonoMax.OpenGLWpfDemo\MonoMax.OpenGLWpfDemo.csproj", "{C9AC2308-D29D-447A-95F1-3BA30F34E39A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.OpenGLWPFControlExample", "MonoMax.OpenGLWpfDemo\MonoMax.OpenGLWPFControlExample.csproj", "{C9AC2308-D29D-447A-95F1-3BA30F34E39A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.WPFGLControl", "MonoMax.WPFGLControl\MonoMax.WPFGLControl.csproj", "{29DC9174-C55F-4A88-87BC-ED489C2BA1BF}"
 EndProject

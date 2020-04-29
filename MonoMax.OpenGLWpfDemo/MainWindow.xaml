@@ -10,7 +10,8 @@
     <Grid>
         <gl:WPFGLControl x:Name="glControl" 
                          GLRender="glControl_GLRender" 
-                         UpdateStrategy="D3DSurface">
+                         UpdateStrategy="D3DSurface"
+                         UseSeperateRenderThread="True">
         </gl:WPFGLControl>
     </Grid>
 </Window>

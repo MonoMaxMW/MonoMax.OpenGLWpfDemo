@@ -3,6 +3,7 @@ using OpenTK.Graphics;
 using OpenTK.Platform;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -113,6 +114,7 @@ namespace MonoMax.WPFGLControl
                 })
                 { IsBackground = true, Priority = ThreadPriority.Highest };
                 _renderThread.Start(_cts);
+                _stopwatch.Start();
             }
             else
             {
@@ -133,18 +135,21 @@ namespace MonoMax.WPFGLControl
                     _updateStrategy.InvalidateImageSource();
                 };
                 _dt.Start();
+                _stopwatch.Start();
             }
 
             base.OnApplyTemplate();
         }
 
+        private Stopwatch _stopwatch = new Stopwatch();
+
         private void UpdateFramerate()
         {
             ++_frames;
-            if (DateTime.Now - _lastMeasured > TimeSpan.FromSeconds(1))
+            if (_stopwatch.ElapsedMilliseconds > 1000)
             {
                 Dispatcher.Invoke(() => _framesTextBlock.Text = $"fps {_frames}");
-                _lastMeasured = DateTime.Now;
+                _stopwatch.Restart();
                 _frames = 0;
             }
         }
