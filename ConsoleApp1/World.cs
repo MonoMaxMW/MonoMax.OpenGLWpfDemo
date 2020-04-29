@@ -1,18 +1,11 @@
-﻿using OpenTK;
-using OpenTK.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenTK.Graphics.OpenGL;
-using gl = OpenTK.Graphics.OpenGL.GL;
-using OpenTK.Input;
-using MonoMax.Core;
+﻿using MonoMax.Core;
 using MonoMax.OpenGLWpfDemo.Renderer;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Input;
 using System.Diagnostics;
 
-namespace ConsoleApp1
+namespace MonoMax.GameWindowExample
 {
     public class Game : GameWindow
     {

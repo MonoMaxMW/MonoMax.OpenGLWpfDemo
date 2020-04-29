@@ -2,11 +2,9 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using gl = OpenTK.Graphics.OpenGL.GL;
 using mat4 = OpenTK.Matrix4;
 
@@ -41,8 +39,10 @@ namespace MonoMax.OpenGLWpfDemo.Renderer
             if (width != Width || height != Height)
                 Resize(width, height);
 
-            gl.Clear(ClearBufferMask.ColorBufferBit);
+            gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             gl.ClearColor(Color.LightBlue);
+            gl.Enable(EnableCap.DepthTest);
+
 
             if (_vao == -1)
             {
@@ -78,9 +78,7 @@ namespace MonoMax.OpenGLWpfDemo.Renderer
             gl.BindVertexArray(_vao);
 
             _viewMat =
-                mat4.CreateRotationX(angle) *
                 mat4.CreateRotationY(angle) *
-                mat4.CreateRotationZ(angle) * 
                 mat4.CreateTranslation(0.0f, 0.0f, -1000.0f);
 
 

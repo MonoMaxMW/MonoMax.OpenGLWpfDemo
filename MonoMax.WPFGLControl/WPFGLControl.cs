@@ -2,7 +2,6 @@
 using OpenTK.Graphics;
 using OpenTK.Platform;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;

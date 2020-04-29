@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C9AC2308-D29D-447A-95F1-3BA30F34E39A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>MonoMax.OpenGLWpfDemo</RootNamespace>
-    <AssemblyName>MonoMax.OpenGLWpfDemo</AssemblyName>
+    <RootNamespace>MonoMax.WpfExample</RootNamespace>
+    <AssemblyName>MonoMax.WpfExample</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

@@ -1,7 +1,4 @@
-﻿using System.Drawing;
-using System.Windows;
-
-namespace MonoMax.Core
+﻿namespace MonoMax.Core
 {
     public interface IRenderer
     {
