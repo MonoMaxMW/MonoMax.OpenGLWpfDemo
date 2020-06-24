@@ -34,10 +34,11 @@ namespace MonoMax.WPFGLControl
             };
         }
 
+
         private CancellationTokenSource _cts;
         private bool _wasResized;
         private int _frames;
-        private TextBlock _framesTextBlock;
+        //private TextBlock _framesTextBlock;
         private Image _wpfImage;
         private IntPtr _windowHandle;
         private HwndSource _hwnd;
@@ -46,15 +47,19 @@ namespace MonoMax.WPFGLControl
         private GraphicsContext _glContext;
         private Thread _renderThread;
         private DispatcherTimer _dt;
+        private Stopwatch _stopwatch = new Stopwatch();
+
 
         public bool UseSeperateRenderThread { get; set; }
         public UpdateStrategy UpdateStrategy { get; set; } = UpdateStrategy.D3DSurface;
         public event EventHandler GLRender;
+        public int MajorVersion { get; set; } = 3;
+        public int MinorVersion { get; set; } = 0;
 
         private void InitOpenGLContext()
         {
             var mode = new GraphicsMode(ColorFormat.Empty, 0, 0, 0, 0, 0, false);
-            _glContext = new GraphicsContext(mode, _windowInfo, 3, 0, GraphicsContextFlags.Default);
+            _glContext = new GraphicsContext(mode, _windowInfo, MajorVersion, MinorVersion, GraphicsContextFlags.Default);
             _glContext.MakeCurrent(_windowInfo);
             _glContext.LoadAll();
         }
@@ -73,17 +78,18 @@ namespace MonoMax.WPFGLControl
             };
 
             var grid = new Grid();
-            _framesTextBlock = new TextBlock()
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(5),
-                Foreground = new SolidColorBrush(Colors.Blue),
-                FontWeight = FontWeights.Bold
-            };
-            Panel.SetZIndex(_framesTextBlock, 1);
+            //_framesTextBlock = new TextBlock()
+            //{
+            //    FontFamily = new FontFamily("Consolas"),
+            //    HorizontalAlignment = HorizontalAlignment.Left,
+            //    VerticalAlignment = VerticalAlignment.Top,
+            //    Margin = new Thickness(5),
+            //    Foreground = new SolidColorBrush(Colors.Blue),
+            //    FontWeight = FontWeights.Bold
+            //};
+            //Panel.SetZIndex(_framesTextBlock, 1);
 
-            grid.Children.Add(_framesTextBlock);
+            //grid.Children.Add(_framesTextBlock);
             grid.Children.Add(_wpfImage);
             AddChild(grid);
 
@@ -105,7 +111,7 @@ namespace MonoMax.WPFGLControl
                     InitOpenGLContext();
                     while (!_cts.IsCancellationRequested)
                     {
-                        UpdateFramerate();
+                        //UpdateFramerate();
                         if (_wasResized)
                         {
                             _wasResized = false;
@@ -113,9 +119,10 @@ namespace MonoMax.WPFGLControl
                             Dispatcher.Invoke(() => _wpfImage.Source = _updateStrategy.CreateImageSource());
                         }
 
+                        _updateStrategy.PreRender();
                         GLRender?.Invoke(this, EventArgs.Empty);
-                        _updateStrategy?.Draw();
-                        Dispatcher.Invoke(() => _updateStrategy.InvalidateImageSource());
+                        _updateStrategy?.Render();
+                        Dispatcher.Invoke(() => _updateStrategy.PostRender());
                     }
 
                     _renderThread.Join();
@@ -126,11 +133,11 @@ namespace MonoMax.WPFGLControl
             }
             else
             {
-                _dt = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(1) };
                 InitOpenGLContext();
-                _dt.Tick += (o, e) =>
+
+                CompositionTarget.Rendering += (o, e) =>
                 {
-                    UpdateFramerate();
+                    //UpdateFramerate();
                     if (_wasResized)
                     {
                         _wasResized = false;
@@ -138,29 +145,36 @@ namespace MonoMax.WPFGLControl
                         _wpfImage.Source = _updateStrategy.CreateImageSource();
                     }
 
+                    _updateStrategy.PreRender();
                     GLRender?.Invoke(this, EventArgs.Empty);
-                    _updateStrategy.Draw();
-                    _updateStrategy.InvalidateImageSource();
+                    _updateStrategy.Render();
+                    _updateStrategy.PostRender();
                 };
-                _dt.Start();
-                _stopwatch.Start();
+
+
+                //_dt = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(1) };
+                //_dt.Tick += (o, e) =>
+                //{
+
+                //};
+                //_dt.Start();
+                //_stopwatch.Start();
             }
 
             base.OnApplyTemplate();
         }
 
-        private Stopwatch _stopwatch = new Stopwatch();
 
-        private void UpdateFramerate()
-        {
-            ++_frames;
-            if (_stopwatch.ElapsedMilliseconds > 1000)
-            {
-                Dispatcher.Invoke(() => _framesTextBlock.Text = $"fps {_frames}");
-                _stopwatch.Restart();
-                _frames = 0;
-            }
-        }
+        //private void UpdateFramerate()
+        //{
+        //    ++_frames;
+        //    if (_stopwatch.ElapsedMilliseconds > 1000)
+        //    {
+        //        Dispatcher.Invoke(() => _framesTextBlock.Text = $"fps {_frames}");
+        //        _stopwatch.Restart();
+        //        _frames = 0;
+        //    }
+        //}
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
