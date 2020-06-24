@@ -2,6 +2,12 @@
 
 namespace MonoMax.WPFGLControl
 {
+    public enum UpdateStrategy
+    {
+        WriteableBitmapImage,
+        D3DSurface
+    }
+
     public interface IUpdateStrategy
     {
         bool IsCreated { get; }
