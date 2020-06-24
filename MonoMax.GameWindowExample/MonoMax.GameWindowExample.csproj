@@ -57,7 +57,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\MonoMax.Core.csproj">
+    <ProjectReference Include="..\MonoMax.Core\MonoMax.Core.csproj">
       <Project>{59233c78-c6d5-44d8-8688-1929b0acfe3e}</Project>
       <Name>MonoMax.Core</Name>
     </ProjectReference>
