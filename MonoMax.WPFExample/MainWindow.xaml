@@ -9,9 +9,10 @@
         Title="MainWindow" Height="480" Width="640">
     <Grid>
         <gl:WPFGLControl x:Name="glControl"
+                         DrawFps="True"
                          FramerateLimit="30"
-                         GLRender="glControl_GLRender" 
-                         UpdateStrategy="D3DImage">
+                         UpdateStrategy="D3DImage"
+                         GLRender="glControl_GLRender">
         </gl:WPFGLControl>
     </Grid>
 </Window>

@@ -4,6 +4,7 @@ using OpenTK.Platform;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,12 +33,16 @@ namespace MonoMax.WPFGLControl
         private TimeSpan mTargetFramerate;
         private GraphicsContext mGlContext;
         private IUpdateStrategy mUpdateStrategy;
+        private Typeface mFpsTypeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+        private TimeSpan mAccumulatedDt;
+        private int mFrames, mLastFrames;
 
         public UpdateStrategy UpdateStrategy { get; set; } = UpdateStrategy.D3DImage;
         public event EventHandler GLRender;
         public int MajorVersion { get; set; } = 3;
         public int MinorVersion { get; set; } = 3;
         public int FramerateLimit { get; set; }
+        public bool DrawFps { get; set; }
 
         public WPFGLControl()
         {
@@ -70,6 +75,7 @@ namespace MonoMax.WPFGLControl
                 InitOpenGLContext();
                 while (!mCts.IsCancellationRequested)
                 {
+                    ++mFrames;
                     if (mWasResized)
                     {
                         mWasResized = false;
@@ -77,10 +83,24 @@ namespace MonoMax.WPFGLControl
                         Dispatcher.Invoke(() => mRenderedImg = mUpdateStrategy.CreateImageSource());
                     }
 
-                    var sleep = mTargetFramerate - Render();
+                    var rt = Render();
+                    var sleep = mTargetFramerate - rt;
+
+                    mAccumulatedDt += rt;
+
                     if (FramerateLimit > 0)
+                        mAccumulatedDt += sleep;
+
+                    if (mAccumulatedDt >= TimeSpan.FromSeconds(1))
+                    {
+                        mLastFrames = mFrames;
+                        mFrames = 0;
+                        mAccumulatedDt = TimeSpan.Zero;
+                    }
+
+                    if(FramerateLimit > 0)
                         Thread.Sleep(sleep > TimeSpan.Zero ? sleep : TimeSpan.Zero); 
-                    
+
                     Dispatcher.Invoke(() => InvalidateVisual());
                 }
 
@@ -108,10 +128,16 @@ namespace MonoMax.WPFGLControl
             mGlContext.LoadAll();
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext dc)
         {
-            drawingContext.DrawImage(mRenderedImg, mDirtyArea);
-            base.OnRender(drawingContext);
+            dc.DrawImage(mRenderedImg, mDirtyArea);
+            if (DrawFps)
+            {
+                dc.DrawText(
+                    new FormattedText($"fps: {mLastFrames}", new CultureInfo("en"), FlowDirection.LeftToRight, mFpsTypeface, 16, new SolidColorBrush(Colors.Blue)),
+                    new Point(10, 10));
+            }
+            base.OnRender(dc);
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
