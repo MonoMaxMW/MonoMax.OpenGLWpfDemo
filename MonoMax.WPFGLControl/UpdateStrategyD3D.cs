@@ -118,14 +118,17 @@ namespace MonoMax.WPFGLControl
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, mFbo);
         }
 
-        public void Render()
+        public void PostRender()
         {
             gl.Finish();
             mWglInterop.WglDXUnlockObjectsNV(mGlHandle, 1, mGlHandles);
         }
 
-        public void PostRender()
+        public void Compute()
         {
+            if (mD3dImage == null)
+                return;
+
             mD3dImage.Lock();
             mD3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, mSurface.NativePointer);
             mD3dImage.AddDirtyRect(new Int32Rect(0, 0, mD3dImage.PixelWidth, mD3dImage.PixelHeight));

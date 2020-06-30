@@ -13,6 +13,7 @@ namespace MonoMax.WPFGLControl
         private int mWidth, mHeight;
         private IntPtr mBackbuffer;
         private WriteableBitmap mImgBmp;
+        private Int32Rect mDirtyArea;
 
         public bool IsCreated { get; private set; }
 
@@ -36,6 +37,7 @@ namespace MonoMax.WPFGLControl
         {
             mWidth = width;
             mHeight = height;
+            mDirtyArea = new Int32Rect(0, 0, mWidth, mHeight);
 
             if (mFbo > -1) gl.DeleteFramebuffer(mFbo); mFbo = -1;
             if (mRboColor > -1) gl.DeleteRenderbuffer(mRboColor); mRboColor = -1;
@@ -68,7 +70,7 @@ namespace MonoMax.WPFGLControl
 
         }
 
-        public void Render()
+        public void PostRender()
         {
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, mFbo);
             gl.ReadPixels(
@@ -79,11 +81,14 @@ namespace MonoMax.WPFGLControl
                 mBackbuffer);
         }
 
-        public void PostRender()
+        public void Compute()
         {
-            mImgBmp?.Lock();
-            mImgBmp?.AddDirtyRect(new Int32Rect(0, 0, mImgBmp.PixelWidth, mImgBmp.PixelHeight));
-            mImgBmp?.Unlock();
+            if (mImgBmp == null)
+                return;
+
+            mImgBmp.Lock();
+            mImgBmp.AddDirtyRect(mDirtyArea);
+            mImgBmp.Unlock();
         }
 
     }
