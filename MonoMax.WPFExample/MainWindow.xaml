@@ -10,8 +10,9 @@
     <Grid>
         <gl:WPFGLControl x:Name="glControl" 
                          GLRender="glControl_GLRender" 
-                         UpdateStrategy="D3DSurface"
-                         UseSeperateRenderThread="True">
+                         UpdateStrategy="WriteableBitmapImage"
+                         UseSeperateRenderThread="True"
+                         ShowFramerate="True">
         </gl:WPFGLControl>
     </Grid>
 </Window>

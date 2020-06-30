@@ -10,15 +10,16 @@ namespace MonoMax.WPFGLControl
 {
     internal sealed class UpdateStrategyD3D : IUpdateStrategy
     {
-        private IntPtr[] _glHandles;
-        private IntPtr _glHandle;
-        private IntPtr _dxSharedHandle;
-        private int _glTexture = -1;
-        private int _fbo = -1;
-        private Device _device;
-        private Surface _surface;
-        private WGLInterop _wglInterop;
-        private D3DImage _d3dImage;
+        private IntPtr[] mGlHandles;
+        private IntPtr mGlHandle;
+        private IntPtr mDxSharedHandle;
+        private int mSharedTexture = -1;
+        private int mFbo = -1;
+        private int mRboDepth = -1;
+        private Device mDevice;
+        private Surface mSurface;
+        private WGLInterop mWglInterop;
+        private D3DImage mD3dImage;
         public bool IsCreated { get; private set; }
 
         public void Create()
@@ -31,35 +32,31 @@ namespace MonoMax.WPFGLControl
 
         }
 
-        private void ReleaseResources()
-        {
-            _glHandle = IntPtr.Zero;
-            _dxSharedHandle = IntPtr.Zero;
-
-            if (_fbo > -1) gl.DeleteFramebuffer(_fbo); _fbo = -1;
-            if (_glTexture > -1) gl.DeleteTexture(_glTexture); _glTexture = -1;
-            if (_surface != null) _surface = null;
-            if (_device != null) _device = null;
-        }
-
         public ImageSource CreateImageSource()
         {
-            return _d3dImage = new D3DImage(96, 96);
+            return mD3dImage = new D3DImage(96, 96);
         }
 
         public void Resize(int width, int height)
         {
-            _wglInterop = new WGLInterop();
-            ReleaseResources();
+            mGlHandle = IntPtr.Zero;
+            mDxSharedHandle = IntPtr.Zero;
 
-            _device = new DeviceEx(
+            if (mFbo > -1) gl.DeleteFramebuffer(mFbo); mFbo = -1;
+            if (mRboDepth > -1) gl.DeleteRenderbuffer(mRboDepth); mRboDepth = -1;
+            if (mSharedTexture > -1) gl.DeleteTexture(mSharedTexture); mSharedTexture = -1;
+            if (mSurface != null) mSurface.Dispose(); mSurface = null;
+            if (mDevice != null) mDevice.Dispose(); mDevice = null;
+
+            mWglInterop = new WGLInterop();
+            mDevice = new DeviceEx(
                 new Direct3DEx(),
                 0,
                 DeviceType.Hardware,
                 IntPtr.Zero,
                 CreateFlags.HardwareVertexProcessing |
                 CreateFlags.Multithreaded |
-                CreateFlags.FpuPreserve,
+                CreateFlags.PureDevice,
                 new PresentParameters()
                 {
                     Windowed = true,
@@ -71,57 +68,68 @@ namespace MonoMax.WPFGLControl
                     BackBufferHeight = height
                 });
 
-            _surface = Surface.CreateRenderTarget(
-                _device,
+            mSurface = Surface.CreateRenderTarget(
+                mDevice,
                 width,
                 height,
                 Format.A8R8G8B8,
                 MultisampleType.None,
                 0,
                 false,
-                ref _dxSharedHandle);
+                ref mDxSharedHandle);
 
-            _fbo = gl.GenFramebuffer();
-            _glTexture = gl.GenTexture();
+            mFbo = gl.GenFramebuffer();
+            mSharedTexture = gl.GenTexture();
 
-            _glHandle = _wglInterop.WglDXOpenDeviceNV(_device.NativePointer);
-            _wglInterop.WglDXSetResourceShareHandleNV(_surface.NativePointer, _dxSharedHandle);
+            mGlHandle = mWglInterop.WglDXOpenDeviceNV(mDevice.NativePointer);
+            mWglInterop.WglDXSetResourceShareHandleNV(mSurface.NativePointer, mDxSharedHandle);
 
-            var genHandle = _wglInterop.WglDXRegisterObjectNV(
-                _glHandle,
-                _surface.NativePointer,
-                (uint)_glTexture,
+            var genHandle = mWglInterop.WglDXRegisterObjectNV(
+                mGlHandle,
+                mSurface.NativePointer,
+                (uint)mSharedTexture,
                 (uint)TextureTarget.Texture2D,
                 WGLInterop.WGL_ACCESS_READ_WRITE_NV);
-            _glHandles = new IntPtr[] { genHandle };
+            mGlHandles = new IntPtr[] { genHandle };
 
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
-            gl.FramebufferTexture2D(FramebufferTarget.Framebuffer,
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, mFbo);
+            gl.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 TextureTarget.Texture2D,
-                _glTexture,
-                0);
+                mSharedTexture, 0);
 
+            mRboDepth = gl.GenRenderbuffer();
+            gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, mRboDepth);
+            gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent24, width, height);
+            gl.FramebufferRenderbuffer(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.DepthAttachment,
+                 RenderbufferTarget.Renderbuffer,
+                 mRboDepth);
 
-
-            gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
-        public void Draw()
-        {
-            _wglInterop.WglDXLockObjectsNV(_glHandle, 1, _glHandles);
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
-            gl.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
-            _wglInterop.WglDXUnlockObjectsNV(_glHandle, 1, _glHandles);
 
+        public void PreRender()
+        {
+            mWglInterop.WglDXLockObjectsNV(mGlHandle, 1, mGlHandles);
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, mFbo);
         }
 
-        public void InvalidateImageSource()
+        public void Render()
         {
-            _d3dImage.Lock();
-            _d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, _surface.NativePointer);
-            _d3dImage.AddDirtyRect(new Int32Rect(0, 0, _d3dImage.PixelWidth, _d3dImage.PixelHeight));
-            _d3dImage.Unlock();
+            gl.Finish();
+            mWglInterop.WglDXUnlockObjectsNV(mGlHandle, 1, mGlHandles);
+        }
+
+        public void PostRender()
+        {
+            mD3dImage.Lock();
+            mD3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, mSurface.NativePointer);
+            mD3dImage.AddDirtyRect(new Int32Rect(0, 0, mD3dImage.PixelWidth, mD3dImage.PixelHeight));
+            mD3dImage.Unlock();
         }
     }
 }

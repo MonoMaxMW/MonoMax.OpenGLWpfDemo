@@ -107,7 +107,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\MonoMax.Core.csproj">
+    <ProjectReference Include="..\MonoMax.Core\MonoMax.Core.csproj">
       <Project>{59233C78-C6D5-44D8-8688-1929B0ACFE3E}</Project>
       <Name>MonoMax.Core</Name>
     </ProjectReference>
