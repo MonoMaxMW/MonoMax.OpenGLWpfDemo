@@ -9,6 +9,7 @@
         Title="MainWindow" Height="480" Width="640">
     <Grid>
         <gl:WPFGLControl x:Name="glControl"
+                         FramerateLimit="30"
                          GLRender="glControl_GLRender" 
                          UpdateStrategy="D3DImage">
         </gl:WPFGLControl>

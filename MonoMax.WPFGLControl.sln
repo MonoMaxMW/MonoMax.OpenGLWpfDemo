@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.WPFExample", "MonoM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.WPFGLControl", "MonoMax.WPFGLControl\MonoMax.WPFGLControl.csproj", "{29DC9174-C55F-4A88-87BC-ED489C2BA1BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.GameWindowExample", "MonoMax.GameWindowExample\MonoMax.GameWindowExample.csproj", "{5569586C-2537-48D1-8391-B60AF575374C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoMax.Core", "MonoMax.Core\MonoMax.Core.csproj", "{59233C78-C6D5-44D8-8688-1929B0ACFE3E}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{29DC9174-C55F-4A88-87BC-ED489C2BA1BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29DC9174-C55F-4A88-87BC-ED489C2BA1BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29DC9174-C55F-4A88-87BC-ED489C2BA1BF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5569586C-2537-48D1-8391-B60AF575374C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5569586C-2537-48D1-8391-B60AF575374C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5569586C-2537-48D1-8391-B60AF575374C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5569586C-2537-48D1-8391-B60AF575374C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{59233C78-C6D5-44D8-8688-1929B0ACFE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59233C78-C6D5-44D8-8688-1929B0ACFE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59233C78-C6D5-44D8-8688-1929B0ACFE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
