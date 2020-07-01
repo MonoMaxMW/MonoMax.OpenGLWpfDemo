@@ -49,6 +49,9 @@ namespace MonoMax.WPFGLControl
             if (mDevice != null) mDevice.Dispose(); mDevice = null;
 
             mWglInterop = new WGLInterop();
+            mDevice = new Device(DXInterop.Direct3DCreate9(DXInterop.D3D_SDK_VERSION));
+
+
             mDevice = new DeviceEx(
                 new Direct3DEx(),
                 0,

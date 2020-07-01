@@ -10,7 +10,6 @@
     <Grid>
         <gl:WPFGLControl x:Name="glControl"
                          DrawFps="True"
-                         FramerateLimit="30"
                          UpdateStrategy="D3DImage"
                          GLRender="glControl_GLRender">
         </gl:WPFGLControl>

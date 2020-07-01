@@ -55,6 +55,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DXInterop.cs" />
     <Compile Include="IUpdateStrategy.cs" />
     <Compile Include="UpdateStrategyD3D.cs" />
     <Compile Include="UpdateStrategyWriteableBitmap.cs" />

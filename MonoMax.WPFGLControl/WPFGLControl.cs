@@ -54,6 +54,11 @@ namespace MonoMax.WPFGLControl
             if (!DesignerProperties.GetIsInDesignMode(new DependencyObject()))
                 Window.GetWindow(this).Closing += (ss, ee) => { mCts?.Cancel(); };
 
+            var ptr = DXInterop.Direct3DCreate9(DXInterop.D3D_SDK_VERSION);
+
+
+
+
             var window = Window.GetWindow(this);
             mWndHandle = window is null ? IntPtr.Zero : new WindowInteropHelper(window).Handle;
             mHwnd = new HwndSource(0, 0, 0, 0, 0, "Offscreen Window", mWndHandle);
